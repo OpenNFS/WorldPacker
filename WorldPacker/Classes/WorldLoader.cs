@@ -77,6 +77,10 @@ namespace WorldPacker.Classes
 
                 foreach (var section in sections)
                 {
+                    var referencedFile = StringUtil.ReplaceLastOccurrence(file, "\\", "\\STREAM")
+                        .Replace(".BUN", section.SectionStruct.SubSectionID != 0 ? $"_0x{section.SectionStruct.SubSectionID:X8}.BUN" : $"_{section.SectionStruct.StreamChunkNumber}.BUN");
+                    var referencedFileLength = (uint) BinaryUtil.GetFileLength(referencedFile);
+
                     // Build struct, write it, continue
                     var newStruct = new SectionStruct
                     {
@@ -89,8 +93,8 @@ namespace WorldPacker.Classes
                         TPKUnknownOffset = section.SectionStruct.TPKUnknownOffset,
                         TPKUnknownOffset2 = section.SectionStruct.TPKUnknownOffset2,
                         TPKDataOffset = section.SectionStruct.TPKDataOffset,
-                        FileSize1 = section.SectionStruct.FileSize1,
-                        FileSize2 = section.SectionStruct.FileSize2,
+                        FileSize1 = referencedFileLength,
+                        FileSize2 = referencedFileLength,
                         FileSize3 = section.SectionStruct.FileSize3,
                         Name = section.SectionStruct.Name,
                         MasterStreamChunkNumber = section.SectionStruct.MasterStreamChunkNumber,
@@ -109,8 +113,8 @@ namespace WorldPacker.Classes
 
                     if (section.IsSpecialSize)
                     {
-                        newStruct.TPKUnknownOffset = section.SectionStruct.FileSize1;
-                        newStruct.TPKUnknownOffset2 = section.SectionStruct.FileSize2;
+                        newStruct.TPKUnknownOffset = referencedFileLength;
+                        newStruct.TPKUnknownOffset2 = referencedFileLength;
                         newStruct.TPKDataOffset = section.SectionStruct.FileSize3;
 
                         newStruct.FileSize1 = 0;
